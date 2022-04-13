@@ -1,0 +1,4 @@
+[submodule "unaesgcm"]
+	path    = unaesgcm
+	url     = ../unaesgcm.git
+  shallow = true
