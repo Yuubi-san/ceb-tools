@@ -98,7 +98,7 @@ static auto derive_key( const u8string_view passphrase,
 {
   constexpr auto max = unsigned{std::numeric_limits<int>::max()};
   if ( size(passphrase) > max )
-    throw std::runtime_error{"passphrase too long"};
+    throw std::length_error{"passphrase too long"};
   constexpr auto rounds = 1024;
   std::array<byte,bits<128>> key;
   if ( PKCS5_PBKDF2_HMAC_SHA1(
