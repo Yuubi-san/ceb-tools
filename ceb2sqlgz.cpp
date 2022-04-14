@@ -27,6 +27,8 @@ used as well as that of the covered work.
 
 #include <limits>
 #include <chrono>
+#include <cuchar>
+#include <codecvt>
 #include <fstream>
 #include <iostream>
 #include <termios.h>
@@ -111,6 +113,46 @@ static auto derive_key( const u8string_view passphrase,
   throw std::runtime_error{"PKCS5_PBKDF2_HMAC_SHA1 failed"};
 }
 
+
+static u8string utf_this_utffing_shit( const std::string_view str )
+// aka global_locale_encoding_to_utf8
+{
+  std::wstring_convert<std::codecvt_utf8<char32_t>,char32_t> wc;
+  u8string result;
+
+  auto in_pos = data(str);
+  const auto ed = in_pos + size(str);
+  std::mbstate_t state{};
+
+  while ( in_pos != ed )
+  {
+    char32_t cp;
+    switch ( const auto n = std::mbrtoc32(&cp, in_pos, ed - in_pos, &state) )
+    {
+      case 0:
+        throw std::invalid_argument{"null character in passphrase"};
+      case -1:
+        throw std::invalid_argument{"illegal byte sequence in passphrase"};
+      case -2:
+        throw std::invalid_argument{"incomplet byte sequence in passphrase"};
+      case -3:
+        #if __cpp_lib_unreachable
+          std::unreachable();
+        #else
+          __builtin_unreachable();
+        #endif
+      default:
+        const auto res = wc.to_bytes(cp);
+        result.append(
+          reinterpret_cast<const u8string::value_type *>(data(res)),
+          size(res) );
+        in_pos += n;
+    }
+  }
+  return result;
+}
+
+
 int main( const int argc, const char *const *const argv ) try
 {
   using ms = std::chrono::milliseconds;
@@ -167,10 +209,9 @@ int main( const int argc, const char *const *const argv ) try
     else if ( err != ENOTTY )
       std::cerr << "k thx\n";
   }
-  // Just assume the encoding for now (FIXME)
-  const auto u8passphrase = u8string_view{
-    reinterpret_cast<const u8string::value_type *>(data(passphrase)),
-    size(passphrase) };
+  std::setlocale(LC_ALL, "");
+  const auto u8passphrase = utf_this_utffing_shit( passphrase );
+  std::setlocale(LC_ALL, "C");
 
   std::ifstream in{ argv[1], std::ios_base::binary };
   auto &out = std::cout;
