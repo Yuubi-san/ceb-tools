@@ -27,7 +27,8 @@ used as well as that of the covered work.
 
 #include <limits>
 #include <chrono>
-#include <cuchar>
+#include <uchar.h>
+#include <clocale>
 #include <codecvt>
 #include <fstream>
 #include <iostream>
@@ -127,7 +128,7 @@ static u8string utf_this_utffing_shit( const std::string_view str )
   while ( in_pos != ed )
   {
     char32_t cp;
-    switch ( const auto n = std::mbrtoc32(&cp, in_pos, ed - in_pos, &state) )
+    switch ( const auto n = ::mbrtoc32(&cp, in_pos, ed - in_pos, &state) )
     {
       case 0:
         throw std::invalid_argument{"null character in passphrase"};
