@@ -128,7 +128,8 @@ static u8string utf_this_utffing_shit( const std::string_view str )
   while ( in_pos != ed )
   {
     char32_t cp;
-    switch ( const auto n = ::mbrtoc32(&cp, in_pos, ed - in_pos, &state) )
+    switch ( const auto n =
+      ::mbrtoc32(&cp, in_pos, static_cast<std::size_t>(ed - in_pos), &state) )
     {
       case 0:
         throw std::invalid_argument{"null character in passphrase"};
