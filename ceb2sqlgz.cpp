@@ -131,11 +131,11 @@ static u8string utf_this_utffing_shit( const std::string_view str )
     {
       case 0:
         throw std::invalid_argument{"null character in passphrase"};
-      case -1:
+      case std::size_t{0}-1:
         throw std::invalid_argument{"illegal byte sequence in passphrase"};
-      case -2:
+      case std::size_t{0}-2:
         throw std::invalid_argument{"incomplet byte sequence in passphrase"};
-      case -3:
+      case std::size_t{0}-3:
         #if __cpp_lib_unreachable
           std::unreachable();
         #else
